@@ -21,6 +21,11 @@ String currentVersion
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "vabrosimov/defi"
+        REGISTRY = "http://nexus:8082/v2/repository/registry"
+    }
+
     stages {
         stage("Configure pipeline") {
             steps {
@@ -58,10 +63,11 @@ pipeline {
                                 returnStdout: true
                             ).trim().split("\n")
 
-                            echo "Found versions in Nexus: ${versions}"
                             if (versions.isEmpty()) {
                                 error "No release versions found in Nexus"
                             }
+
+                            echo "Found versions in Nexus: ${versions}"
 
                             properties([
                                 parameters([
@@ -72,6 +78,51 @@ pipeline {
                                     )
                                 ])
                             ])
+                        }
+                    }
+
+                    logEndStage()
+                }
+            }
+        }
+
+        stage("Find digest") {
+            steps {
+                script {
+                    logStartStage()
+
+                    def manifestsUrl = "http://${REGISTRY}/${IMAGE_NAME}/manifests/1.0.0-37"
+
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: "NEXUS_CREDENTIALS",
+                            usernameVariable: "NEXUS_USER",
+                            passwordVariable: "NEXUS_PASSWORD"
+                        )
+                    ]) {
+                        withEnv([
+                            "MANIFESTS_URL=${manifestsUrl}"
+                        ]) {
+                            String digest = sh(
+                                script: '''
+                                curl -s -u $NEXUS_USER:$NEXUS_PASSWORD $MANIFESTS_URL |
+                                awk '
+                                /"architecture"[[:space:]]*:[[:space:]]*"amd64"/ {found=1}
+                                found && /"digest"/ {
+                                    gsub(/"|,/, "", $2)
+                                    print $2
+                                    exit
+                                }
+                                '
+                                ''',
+                                returnStdout: true
+                            ).trim()
+
+                            if (digest.isEmpty()) {
+                                error "No digest found in registry"
+                            }
+
+                            echo "Found digest in registry: ${digest}"
                         }
                     }
 
