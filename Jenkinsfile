@@ -91,7 +91,7 @@ pipeline {
                 script {
                     logStartStage()
 
-                    def manifestsUrl = "http://${REGISTRY}/${IMAGE_NAME}/manifests/1.0.0-37"
+                    def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/1.0.0-37"
 
                     withCredentials([
                         usernamePassword(
