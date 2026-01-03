@@ -1,22 +1,9 @@
-def logStartStage() {
-    ansiColor('xterm') {
-        echo """
-        \u001B[34m══════════════════════════════════════════════\u001B[0m
-        \u001B[36m▶▶▶ START STAGE: ${STAGE_NAME}\u001B[0m
-        \u001B[34m══════════════════════════════════════════════\u001B[0m
-        """.stripIndent()
-    }
-}
+@Library('abrosimov.jenkins') _
 
-def logEndStage() {
-    ansiColor('xterm') {
-        echo """
-        \u001B[32m✔✔✔ END STAGE: ${STAGE_NAME}\u001B[0m
-        """.stripIndent()
-    }
-}
+import utils.Logger
 
 String currentVersion
+Logger logger = new Logger(this)
 
 pipeline {
     agent any
@@ -31,7 +18,7 @@ pipeline {
         stage("Configure pipeline") {
             steps {
                 script {
-                    logStartStage()
+                    logger.logStartStage()
 
                     String repo     = "maven-releases"
                     String group    = "ru.abrosimov.defi"
@@ -82,7 +69,7 @@ pipeline {
                         }
                     }
 
-                    logEndStage()
+                    logger.logEndStage()
                 }
             }
         }
@@ -90,7 +77,7 @@ pipeline {
         stage("Find digest") {
             steps {
                 script {
-                    logStartStage()
+                    logger.logStartStage()
 
                     def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/${params.VERSION}"
 
@@ -120,7 +107,7 @@ pipeline {
                         }
                     }
 
-                    logEndStage()
+                    logger.logEndStage()
                 }
             }
         }
