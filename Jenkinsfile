@@ -92,7 +92,7 @@ pipeline {
                 script {
                     logStartStage()
 
-                    def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/1.0.0-37"
+                    def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/${params.VERSION}"
 
                     withCredentials([
                         usernamePassword(
