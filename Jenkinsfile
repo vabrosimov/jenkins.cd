@@ -107,14 +107,7 @@ pipeline {
                             String digest = sh(
                                 script: '''
                                 curl -s -u $NEXUS_USER:$NEXUS_PASSWORD $MANIFESTS_URL |
-                                awk '
-                                /"architecture"[[:space:]]*:[[:space:]]*"amd64"/ {found=1}
-                                found && /"digest"/ {
-                                    gsub(/"|,/, "", $2)
-                                    print $2
-                                    exit
-                                }
-                                '
+                                jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
                                 ''',
                                 returnStdout: true
                             ).trim()
