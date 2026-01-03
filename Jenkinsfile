@@ -23,7 +23,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "vabrosimov/defi"
-        REGISTRY = "http://nexus:8082/v2/repository/registry"
+        REGISTRY = "http://95.174.94.249:8082/v2/repository/registry"
+        REPOSITORY = "http://95.174.94.249:8081"
     }
 
     stages {
@@ -32,12 +33,11 @@ pipeline {
                 script {
                     logStartStage()
 
-                    String nexusUrl = "http://nexus:8081"
                     String repo     = "maven-releases"
                     String group    = "ru.abrosimov.defi"
                     String artifact = "defi"
 
-                    GString apiUrl = "${nexusUrl}/service/rest/v1/search?repository=${repo}&group=${group}&name=${artifact}"
+                    GString apiUrl = "${REPOSITORY}/service/rest/v1/search?repository=${repo}&group=${group}&name=${artifact}"
 
                     withCredentials([
                         usernamePassword(
