@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: defi
+      POSTGRES_USER: defi_app
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U defi_app -d defi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 1200m
+    cpus: "1.0"
+
+  app:
+    image: vabrosimov/defi@sha256:a3fe880f3122cd7ab6ff4af2c61fab0c3bb18f7eceab366d00c4de05fd883042
+    container_name: defi-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/defi
+      SPRING_DATASOURCE_USERNAME: defi_app
+      SPRING_DATASOURCE_PASSWORD: 123456
+      LOGGING_LEVEL_RU_ABROSIMOV_DEFI: DEBUG
+      # JVM настройки
+      JAVA_TOOL_OPTIONS: >
+        -Xms1g
+        -Xmx1g
+        -XX:+UseSerialGC
+    ports:
+      - "8080:8080"
+
+    mem_limit: 2000m
+    cpus: "1.0"
+
+volumes:
+  pg_data:
