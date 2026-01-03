@@ -62,6 +62,7 @@ pipeline {
                                 ''',
                                 returnStdout: true
                             ).trim().split("\n")
+                            versions.add(0, 'SKIP_INSTALL')
 
                             if (versions.isEmpty()) {
                                 error "No release versions found in Nexus"
