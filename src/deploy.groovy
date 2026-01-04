@@ -2,6 +2,7 @@
 
 
 import ru.abrosimov.jenkins.context.Application
+import ru.abrosimov.jenkins.stages.ConfigurePipeline
 import ru.abrosimov.jenkins.utils.Logger
 import ru.abrosimov.jenkins.context.PipelineContext
 
@@ -39,51 +40,15 @@ pipeline {
                 script {
                     logger.logStartStage()
 
-                    List<Object> choices = pipelineContext.applications.collect { Application application ->
-                        String repo = "maven-releases"
-                        GString apiUrl = "${REPOSITORY}/service/rest/v1/search?repository=${repo}&group=${application.mavenGroup}&name=${application.mavenArtifact}"
+                    ConfigurePipeline configurePipeline = new ConfigurePipeline(this)
 
-                        withCredentials([
-                                usernamePassword(
-                                        credentialsId: "NEXUS_CREDENTIALS",
-                                        usernameVariable: "NEXUS_USER",
-                                        passwordVariable: "NEXUS_PASSWORD"
-                                )
-                        ]) {
-                            withEnv([
-                                    "API_URL=${apiUrl}"
-                            ]) {
-                                List<String> versions = sh(
-                                        script: '''
-                                curl -s -u "$NEXUS_USER:$NEXUS_PASSWORD" \
-                                "$API_URL" \
-                                | grep '"version"' \
-                                | sed 's/.*"version"[ ]*:[ ]*"//' \
-                                | sed 's/".*//' \
-                                | grep -v SNAPSHOT \
-                                | sort -Vr \
-                                | uniq
-                                ''',
-                                        returnStdout: true
-                                ).trim().split("\n")
-                                versions.add(0, 'SKIP_INSTALL')
+                    List<Object> parametersList = []
 
-                                if (versions.isEmpty()) {
-                                    error "No release versions found in Nexus for ${application.mavenGroup}.${application.mavenArtifact}"
-                                }
-
-                                echo "Found versions in Nexus for ${application.mavenGroup}.${application.mavenArtifact}: ${versions}"
-
-                                return choice(
-                                        name: application.versionParamName,
-                                        choices: versions,
-                                        description: 'Version to deploy'
-                                )
-                            }
-                        }
+                    pipelineContext.applications.each { Application application ->
+                        parametersList.addAll(configurePipeline.call(application))
                     }
 
-                    properties([parameters(choices)])
+                    properties([parameters(parametersList)])
 
                     logger.logEndStage()
                 }
