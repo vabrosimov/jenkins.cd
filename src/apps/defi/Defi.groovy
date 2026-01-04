@@ -9,6 +9,12 @@ class Defi implements Application {
     String versionParamName = "VERSION_DEFI"
     String vmAddress = "176.108.250.97"
     String vmUser = "vabrosimov"
+    String digest = ""
+
+    @Override
+    void setDigest(String digest) {
+        this.digest = digest
+    }
 }
 
 return new Defi()
