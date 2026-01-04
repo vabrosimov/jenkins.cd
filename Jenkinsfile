@@ -1,6 +1,7 @@
 @Library('abrosimov.jenkins') _
 
-import utils.Logger
+import ru.abrosimov.jenkins.utils.Logger
+import ru.abrosimov.jenkins.context.PipelineContext
 
 String currentVersion
 Logger logger = new Logger(this)
@@ -15,6 +16,10 @@ pipeline {
     }
 
     stages {
+        stage("Init pipeline") {
+
+        }
+
         stage("Configure pipeline") {
             steps {
                 script {

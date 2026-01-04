@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'ru.abrosimov'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'ru.abrosimov:jenkins:1.0.0'
+}
