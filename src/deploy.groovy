@@ -1,10 +1,13 @@
 @Library('abrosimov.jenkins') _
 
+
+import ru.abrosimov.jenkins.context.Application
 import ru.abrosimov.jenkins.utils.Logger
 import ru.abrosimov.jenkins.context.PipelineContext
 
 String currentVersion
 Logger logger = new Logger(this)
+PipelineContext pipelineContext
 
 pipeline {
     agent any
@@ -17,7 +20,18 @@ pipeline {
 
     stages {
         stage("Init pipeline") {
+            steps {
+                script {
+                    logger.logStartStage()
 
+                    def Defi = load "src/apps/defi/Defi.groovy"
+
+                    pipelineContext = new PipelineContext(this)
+                    pipelineContext.applications = [Defi]
+
+                    logger.logEndStage()
+                }
+            }
         }
 
         stage("Configure pipeline") {
@@ -25,24 +39,22 @@ pipeline {
                 script {
                     logger.logStartStage()
 
-                    String repo     = "maven-releases"
-                    String group    = "ru.abrosimov.defi"
-                    String artifact = "defi"
+                    List<Object> choices = pipelineContext.applications.collect { Application application ->
+                        String repo = "maven-releases"
+                        GString apiUrl = "${REPOSITORY}/service/rest/v1/search?repository=${repo}&group=${application.mavenGroup}&name=${application.mavenArtifact}"
 
-                    GString apiUrl = "${REPOSITORY}/service/rest/v1/search?repository=${repo}&group=${group}&name=${artifact}"
-
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: "NEXUS_CREDENTIALS",
-                            usernameVariable: "NEXUS_USER",
-                            passwordVariable: "NEXUS_PASSWORD"
-                        )
-                    ]) {
-                        withEnv([
-                            "API_URL=${apiUrl}"
+                        withCredentials([
+                                usernamePassword(
+                                        credentialsId: "NEXUS_CREDENTIALS",
+                                        usernameVariable: "NEXUS_USER",
+                                        passwordVariable: "NEXUS_PASSWORD"
+                                )
                         ]) {
-                            List<String> versions = sh(
-                                script: '''
+                            withEnv([
+                                    "API_URL=${apiUrl}"
+                            ]) {
+                                List<String> versions = sh(
+                                        script: '''
                                 curl -s -u "$NEXUS_USER:$NEXUS_PASSWORD" \
                                 "$API_URL" \
                                 | grep '"version"' \
@@ -52,27 +64,26 @@ pipeline {
                                 | sort -Vr \
                                 | uniq
                                 ''',
-                                returnStdout: true
-                            ).trim().split("\n")
-                            versions.add(0, 'SKIP_INSTALL')
+                                        returnStdout: true
+                                ).trim().split("\n")
+                                versions.add(0, 'SKIP_INSTALL')
 
-                            if (versions.isEmpty()) {
-                                error "No release versions found in Nexus"
-                            }
+                                if (versions.isEmpty()) {
+                                    error "No release versions found in Nexus for ${application.mavenGroup}.${application.mavenArtifact}"
+                                }
 
-                            echo "Found versions in Nexus: ${versions}"
+                                echo "Found versions in Nexus for ${application.mavenGroup}.${application.mavenArtifact}: ${versions}"
 
-                            properties([
-                                parameters([
-                                    choice(
-                                        name: 'VERSION',
+                                return choice(
+                                        name: application.versionParamName,
                                         choices: versions,
                                         description: 'Version to deploy'
-                                    )
-                                ])
-                            ])
+                                )
+                            }
                         }
                     }
+
+                    properties([parameters(choices)])
 
                     logger.logEndStage()
                 }
@@ -87,21 +98,21 @@ pipeline {
                     def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/${params.VERSION}"
 
                     withCredentials([
-                        usernamePassword(
-                            credentialsId: "NEXUS_CREDENTIALS",
-                            usernameVariable: "NEXUS_USER",
-                            passwordVariable: "NEXUS_PASSWORD"
-                        )
+                            usernamePassword(
+                                    credentialsId: "NEXUS_CREDENTIALS",
+                                    usernameVariable: "NEXUS_USER",
+                                    passwordVariable: "NEXUS_PASSWORD"
+                            )
                     ]) {
                         withEnv([
-                            "MANIFESTS_URL=${manifestsUrl}"
+                                "MANIFESTS_URL=${manifestsUrl}"
                         ]) {
                             String digest = sh(
-                                script: '''
+                                    script: '''
                                 curl -s -u $NEXUS_USER:$NEXUS_PASSWORD $MANIFESTS_URL |
                                 jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
                                 ''',
-                                returnStdout: true
+                                    returnStdout: true
                             ).trim()
 
                             if (digest.isEmpty()) {

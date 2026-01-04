@@ -1,15 +1,9 @@
 plugins {
-    id 'java'
+    id 'groovy'
 }
 
 group = 'ru.abrosimov'
 version = '1.0.0'
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
 
 repositories {
     mavenLocal()
@@ -17,5 +11,17 @@ repositories {
 }
 
 dependencies {
-    implementation 'ru.abrosimov:jenkins:1.0.0'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.21'
+}
+
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['src']
+        }
+    }
+}
+
+dependencies {
+    implementation 'ru.abrosimov:jenkins-shared-lib:1.0.0'
 }
