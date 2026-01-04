@@ -1,7 +1,7 @@
 @Library('abrosimov.jenkins') _
 
-import ru.abrosimov.jenkins.utils.Logger
-import ru.abrosimov.jenkins.context.PipelineContext
+import utils.Logger
+import context.PipelineContext
 
 String currentVersion
 Logger logger = new Logger(this)

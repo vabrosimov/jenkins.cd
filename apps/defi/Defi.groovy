@@ -1,4 +1,4 @@
-import ru.abrosimov.jenkins.context.Application
+import context.Application
 
 class Defi implements Application {
     getMavenGroup() {
