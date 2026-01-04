@@ -3,6 +3,7 @@
 
 import ru.abrosimov.jenkins.context.Application
 import ru.abrosimov.jenkins.stages.ConfigurePipeline
+import ru.abrosimov.jenkins.stages.FindDigest
 import ru.abrosimov.jenkins.utils.Logger
 import ru.abrosimov.jenkins.context.PipelineContext
 
@@ -14,7 +15,6 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "vabrosimov/defi"
         REGISTRY = "http://95.174.94.249:8082/v2/repository/registry"
         REPOSITORY = "http://95.174.94.249:8081"
     }
@@ -60,32 +60,10 @@ pipeline {
                 script {
                     logger.logStartStage()
 
-                    def manifestsUrl = "${REGISTRY}/${IMAGE_NAME}/manifests/${params.VERSION}"
+                    FindDigest findDigest = new FindDigest(this)
 
-                    withCredentials([
-                            usernamePassword(
-                                    credentialsId: "NEXUS_CREDENTIALS",
-                                    usernameVariable: "NEXUS_USER",
-                                    passwordVariable: "NEXUS_PASSWORD"
-                            )
-                    ]) {
-                        withEnv([
-                                "MANIFESTS_URL=${manifestsUrl}"
-                        ]) {
-                            String digest = sh(
-                                    script: '''
-                                curl -s -u $NEXUS_USER:$NEXUS_PASSWORD $MANIFESTS_URL |
-                                jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
-                                ''',
-                                    returnStdout: true
-                            ).trim()
-
-                            if (digest.isEmpty()) {
-                                error "No digest found in registry"
-                            }
-
-                            echo "Found digest in registry: ${digest}"
-                        }
+                    pipelineContext.applications.each { Application application ->
+                        findDigest.call(application)
                     }
 
                     logger.logEndStage()
