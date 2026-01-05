@@ -1,11 +1,11 @@
 @Library('abrosimov.jenkins') _
 
-import ru.abrosimov.jenkins.context.Application
-import ru.abrosimov.jenkins.stages.ConfigurePipeline
-import ru.abrosimov.jenkins.stages.FindDigest
-import ru.abrosimov.jenkins.stages.Deploy
-import ru.abrosimov.jenkins.utils.Logger
-import ru.abrosimov.jenkins.context.PipelineContext
+import ru.abrosimov.jenkins.cd.context.Application
+import ru.abrosimov.jenkins.cd.stages.ConfigurePipeline
+import ru.abrosimov.jenkins.cd.stages.FindDigest
+import ru.abrosimov.jenkins.cd.stages.Deploy
+import ru.abrosimov.jenkins.core.Logger
+import ru.abrosimov.jenkins.cd.context.PipelineContext
 
 PipelineContext pipelineContext
 

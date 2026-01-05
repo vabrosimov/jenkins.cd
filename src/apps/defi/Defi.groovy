@@ -1,6 +1,6 @@
 package apps.defi
 
-import ru.abrosimov.jenkins.context.Application
+import ru.abrosimov.jenkins.cd.context.Application
 
 class Defi implements Application {
     String mavenGroup = "ru.abrosimov.defi"
