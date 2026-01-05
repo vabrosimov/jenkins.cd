@@ -7,7 +7,6 @@ import ru.abrosimov.jenkins.stages.Deploy
 import ru.abrosimov.jenkins.utils.Logger
 import ru.abrosimov.jenkins.context.PipelineContext
 
-Logger logger = new Logger(this)
 PipelineContext pipelineContext
 
 pipeline {
@@ -22,14 +21,14 @@ pipeline {
         stage("Init pipeline") {
             steps {
                 script {
-                    logger.logStartStage()
+                    Logger.startStage(this)
 
                     def Defi = load "src/apps/defi/Defi.groovy"
 
                     pipelineContext = new PipelineContext(this)
                     pipelineContext.applications = [Defi]
 
-                    logger.logEndStage()
+                    Logger.endStage(this)
                 }
             }
         }
@@ -37,7 +36,7 @@ pipeline {
         stage("Configure pipeline") {
             steps {
                 script {
-                    logger.logStartStage()
+                    Logger.startStage(this)
 
                     ConfigurePipeline configurePipeline = new ConfigurePipeline(this)
 
@@ -49,7 +48,7 @@ pipeline {
 
                     properties([parameters(parametersList)])
 
-                    logger.logEndStage()
+                    Logger.endStage(this)
                 }
             }
         }
@@ -57,7 +56,7 @@ pipeline {
         stage("Find digest") {
             steps {
                 script {
-                    logger.logStartStage()
+                    Logger.startStage(this)
 
                     FindDigest findDigest = new FindDigest(this)
 
@@ -65,7 +64,7 @@ pipeline {
                         findDigest.call(application)
                     }
 
-                    logger.logEndStage()
+                    Logger.endStage(this)
                 }
             }
         }
@@ -73,7 +72,7 @@ pipeline {
         stage("Deploy") {
             steps {
                 script {
-                    logger.logStartStage()
+                    Logger.startStage(this)
 
                     Deploy deploy = new Deploy(this)
 
@@ -81,7 +80,7 @@ pipeline {
                         deploy.call(application)
                     }
 
-                    logger.logEndStage()
+                    Logger.endStage(this)
                 }
             }
         }
