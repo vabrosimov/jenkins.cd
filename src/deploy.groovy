@@ -25,8 +25,8 @@ pipeline {
 
                     def Defi = load "src/apps/defi/Defi.groovy"
 
-                    pipelineContext = new PipelineContext(this)
-                    pipelineContext.applications = [Defi]
+                    pipelineContext = load "src/PipelineContextImpl.groovy"
+                    pipelineContext.setApplications([Defi])
 
                     Logger.endStage(this)
                 }
