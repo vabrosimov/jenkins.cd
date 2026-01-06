@@ -20,7 +20,7 @@ services:
     cpus: "1.0"
 
   app:
-    image: vabrosimov/defi@sha256:a3fe880f3122cd7ab6ff4af2c61fab0c3bb18f7eceab366d00c4de05fd883042
+    image: vabrosimov/defi@${digest}
     container_name: defi-app
     restart: unless-stopped
     depends_on:
