@@ -77,7 +77,7 @@ pipeline {
                     Deploy deploy = new Deploy(this)
 
                     pipelineContext.applications.each { Application application ->
-                        deploy.call(application)
+                        deploy.call(pipelineContext,application)
                     }
 
                     Logger.endStage(this)
