@@ -20,7 +20,7 @@ services:
     cpus: "1.0"
 
   app:
-    image: vabrosimov/defi@${digest}
+    image: 95.174.94.249:8082/repository/registry/vabrosimov/defi@${digest}
     container_name: defi-app
     restart: unless-stopped
     depends_on:
