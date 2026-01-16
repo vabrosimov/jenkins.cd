@@ -7,7 +7,7 @@ class PipelineContextImpl extends PipelineContext {
         super(jenkins)
     }
 
-    String registry = "http://95.174.94.249:8082/v2/repository/registry"
+    String registry = "95.174.94.249:8082/repository/registry/"
     List<Application> applications = null
 }
 
