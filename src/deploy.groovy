@@ -78,6 +78,7 @@ pipeline {
 
                     pipelineContext.applications.each { Application application ->
                         deploy.call(pipelineContext,application)
+                        pipelineContext.appendBuildDescription("Deployed ${application.mavenArtifact} version: ${params[application.versionParamName]}")
                     }
 
                     Logger.endStage(this)
